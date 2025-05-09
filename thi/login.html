@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Đăng nhập</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <form id="loginForm">
+    <h2>Đăng nhập</h2>
+    <input type="text" id="username" placeholder="Tên đăng nhập" required />
+    <input type="password" id="password" placeholder="Mật khẩu" required />
+    <select id="role" required>
+      <option value="user">Người dùng</option>
+      <option value="admin">Quản trị viên</option>
+    </select>
+    <button type="submit">Đăng nhập</button>
+      <p class="register-link">Chưa có tài khoản? <a href="register.html">Đăng ký</a></p>
+  </form>
+
+  <script src="login.js"></script>
+</body>
+</html>
