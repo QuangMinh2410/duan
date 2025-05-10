@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Quản lý Khóa Học</title>
+  <style>
+    table, th, td {
+      border: 1px solid #ccc;
+      border-collapse: collapse;
+      padding: 8px;
+    }
+    input, select, button {
+      margin: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Trang Quản Lý Khóa Học</h1>
+
+
+  <div>
+    <input type="hidden" id="courseId">
+    <input type="text" id="name" placeholder="Tên khóa học">
+    <input type="number" id="price" placeholder="Giá tiền">
+    <input type="text" id="teacher" placeholder="Giảng viên">
+    <input type="date" id="date">
+    <button onclick="saveCourse()">Lưu</button>
+  </div>
+
+  <div>
+    <input type="text" id="filterTeacher" placeholder="Lọc theo giảng viên" oninput="fetchCourses()">
+    <select id="sortOption" onchange="fetchCourses()">
+      <option value="">Sắp xếp theo</option>
+      <option value="name">Tên A-Z</option>
+      <option value="price">Giá tăng dần</option>
+      <option value="date">Ngày mới nhất</option>
+    </select>
+  </div>
+
+
+  <table>
+    <thead>
+      <tr>
+        <th>Tên</th>
+        <th>Giá</th>
+        <th>Giảng viên</th>
+        <th>Ngày</th>
+        <th>Hành động</th>
+      </tr>
+    </thead>
+    <tbody id="courseTable"></tbody>
+  </table>
+
+  <script>
+    const API_URL = 'https://681ebc0fc1c291fa6634f845.mockapi.io/courses';
+
+    async function fetchCourses() {
+      let url = API_URL;
+      const teacherFilter = document.getElementById('filterTeacher').value;
+      const sort = document.getElementById('sortOption').value;
+
+      const params = [];
+      if (teacherFilter) {
+        params.push(`search=${teacherFilter}&searchBy=teacher`);
+      }
+      if (sort) {
+        params.push(`sortBy=${sort}&order=asc`);
+      }
+
+      if (params.length) {
+        url += '?' + params.join('&');
+      }
+
+      const res = await fetch(url);
+      const courses = await res.json();
+      renderCourses(courses);
+    }
+
+    function renderCourses(courses) {
+      const tbody = document.getElementById('courseTable');
+      tbody.innerHTML = '';
+
+      courses.forEach(course => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${course.name}</td>
+          <td>${course.price}</td>
+          <td>${course.teacher}</td>
+          <td>${course.date}</td>
+          <td>
+            <button onclick="editCourse(${JSON.stringify(course)})">Sửa</button>
+            <button onclick="deleteCourse('${course.id}')">Xóa</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function saveCourse() {
+      const id = document.getElementById('courseId').value;
+      const name = document.getElementById('name').value;
+      const price = document.getElementById('price').value;
+      const teacher = document.getElementById('teacher').value;
+      const date = document.getElementById('date').value;
+
+      const course = { name, price, teacher, date };
+
+      if (id) {
+     
+        await fetch(`${API_URL}/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(course)
+        });
+      } else {
+      
+        await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(course)
+        });
+      }
+
+      clearForm();
+      fetchCourses();
+    }
+
+    function editCourse(course) {
+      document.getElementById('courseId').value = course.id;
+      document.getElementById('name').value = course.name;
+      document.getElementById('price').value = course.price;
+      document.getElementById('teacher').value = course.teacher;
+      document.getElementById('date').value = course.date;
+    }
+
+    async function deleteCourse(id) {
+      if (confirm('Bạn có chắc muốn xóa khóa học này?')) {
+        await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+        fetchCourses();
+      }
+    }
+
+    function clearForm() {
+      document.getElementById('courseId').value = '';
+      document.getElementById('name').value = '';
+      document.getElementById('price').value = '';
+      document.getElementById('teacher').value = '';
+      document.getElementById('date').value = '';
+    }
+
+    fetchCourses();
+  </script>
+</body>
+</html>
